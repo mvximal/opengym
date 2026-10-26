@@ -3,7 +3,7 @@ name: opengym
 services:
   # One-time: download the exercise images + GIFs into ./media (skipped if already there).
   # ~140 MB, from github.com/hasaneyldrm/exercises-dataset (CC).
-  media:
+  opengym-media:
     image: alpine/git
     volumes:
       - ./media/img:/out/img
@@ -23,7 +23,7 @@ services:
 
   # Passkey auth + per-user data (Node, no framework).
   # image: prebuilt (docker compose pull). build: from source (docker compose up --build).
-  api:
+  opengym-api:
     image: ghcr.io/duartesantos8/opengym-api:latest
     build: ./api
     restart: unless-stopped
@@ -40,16 +40,16 @@ services:
 
   # Builds the React frontend (multi-stage) and serves it, proxying /api → api
   # and the exercise media from the shared volume. Single origin for passkeys.
-  web:
+  opengym-web:
     image: ghcr.io/duartesantos8/opengym-web:latest
     build:
       context: .
       dockerfile: web/Dockerfile
     restart: unless-stopped
     depends_on:
-      media:
+      opengym-media:
         condition: service_completed_successfully
-      api:
+      opengym-api:
         condition: service_started
     ports:
       - "${WEB_PORT:-8080}:80"
